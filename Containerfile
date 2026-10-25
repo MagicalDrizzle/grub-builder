@@ -31,12 +31,10 @@ RUN --mount=type=secret,id=sbat,target=/run/secrets/sbat.csv,required=false \
        /usr/lib/efi/shim/*/EFI/fedora/shimx64.efi \
        /usr/lib/efi/shim/*/EFI/fedora/mmx64.efi \
        -t .; \
-    printf '%s\n' 'configfile ${cmdpath}/grub.cfg' > embedded.cfg; \
+    [ ! -f embedded.cfg ] && printf '%s\n' 'configfile ${cmdpath}/grub.cfg' > embedded.cfg; \
     objcopy --dump-section .sbat=sbat-rh.csv grubx64.efi /tmp/dummy && rm -f /tmp/dummy; \
     sbat_file="sbat-rh.csv"; \
-    if [ -f /run/secrets/sbat.csv ]; then \
-        sbat_file="/run/secrets/sbat.csv"; \
-    fi; \
+    [ -f /run/secrets/sbat.csv ] && sbat_file="/run/secrets/sbat.csv"; \
     if [ -n "$PREFIX" ]; then \
         NAME=$(printf '%s' "$PREFIX" | sed 's#^/##; s#/#-#g'); \
         grub2-mkimage -C xz -O x86_64-efi -d /usr/lib/grub/x86_64-efi -s "$sbat_file" \
